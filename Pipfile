@@ -8,6 +8,7 @@ pytest = "*"
 pylint = "*"
 
 [packages]
+pyglet = "*"
 
 [requires]
 python_version = "3"
