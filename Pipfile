@@ -12,3 +12,7 @@ pyglet = "*"
 
 [requires]
 python_version = "3"
+
+[scripts]
+lint = "python -m pylint vidar"
+test = "python -m pytest"

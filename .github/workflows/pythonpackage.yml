@@ -24,8 +24,8 @@ jobs:
     - name: Lint with pylint
       run: |
         pip install pylint
-        pylint vidar
+        pipenv run lint
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest
+        pipenv run test
