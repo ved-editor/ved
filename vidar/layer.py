@@ -1,5 +1,3 @@
-# pylint: disable=missing-module-docstring
-
 class Layer:
     """A layer is a piece of content for the movie"""
 
