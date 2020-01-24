@@ -15,5 +15,5 @@ pytest-mock = "*"
 python_version = "3"
 
 [scripts]
-lint = "python -m flake8 vidar"
+lint = "python -m flake8 vidar tests"
 test = "python -m pytest"
