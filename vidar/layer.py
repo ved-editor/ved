@@ -4,6 +4,7 @@ class Layer:
     def __init__(self, duration):
         self.duration = duration
         self.enabled = True
+        self.active = False
         self._movie = None
 
     def attach(self, movie):
@@ -18,6 +19,7 @@ class Layer:
 
     def start(self):
         """Activate the layer"""
+        self.active = True
 
     def frame(self, time):
         """Do a single frame of the video
@@ -28,3 +30,4 @@ class Layer:
 
     def stop(self):
         """Deactivate the layer"""
+        self.active = False
