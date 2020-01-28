@@ -1,4 +1,5 @@
 import pyglet
+from pyglet.gl import *  # noqa F403
 
 
 class Movie:
@@ -33,6 +34,25 @@ class Movie:
         self._tracks = Movie.Tracks(self, value)
         for time, layer in value:
             layer.attach(self)
+
+    def _frame(self, time):
+        self._draw()
+        self._process_layers(time)
+
+    def _draw(self):
+        glClearColor(*self.background)
+        glClear(GL_COLOR_BUFFER_BIT)
+
+    def _process_layers(self, time):
+        for start_time, layer in self.tracks:
+            end_time = start_time + layer.duration
+            if start_time <= time < end_time:
+                if not layer.active:
+                    layer.start()
+                layer.frame(time)
+            else:
+                if layer.active:
+                    layer.stop()
 
     class Tracks(list):
         def __init__(self, movie, iterable=()):

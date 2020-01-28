@@ -1,2 +1,5 @@
 [flake8]
 ignore=E128
+
+per-file-ignores=
+    vidar/movie.py:F405

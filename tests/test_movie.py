@@ -1,4 +1,5 @@
 import pytest   # noqa F401
+import pyglet
 
 from vidar.movie import Movie
 from vidar.layer import Layer
@@ -31,7 +32,7 @@ class TestMovie:
 
         movie.remove_layer(layer)
 
-        spy.assert_called_once_with()
+        spy.assert_called_once()
 
     def test_tracks_filter_detaches_layer(self, mocker):
         movie = Movie(1, 1)
@@ -42,4 +43,50 @@ class TestMovie:
         movie.tracks = [(time, layer) for time, layer in movie.tracks
             if layer != test_layer]
 
-        spy.assert_called_once_with()
+        spy.assert_called_once()
+
+    def test_frame_shows_background_with_no_layers(self):
+        PURPLE = (255, 0, 255, 255)
+        w = h = 1
+        movie = Movie(w, h, background=PURPLE)
+        movie._frame(0.0)
+        expected_data = list(w * h * PURPLE)
+
+        image_data = pyglet.image.get_buffer_manager() \
+            .get_color_buffer() \
+            .get_image_data()
+        actual_data = list(image_data.get_data('RGBA'))
+
+        assert actual_data == expected_data
+
+    def test_frame_calls_layer_start(self, mocker):
+        movie = Movie(1, 1)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+        spy = mocker.spy(layer, 'start')
+
+        movie._frame(0.0)
+
+        spy.assert_called_once()
+
+    def test_frame_calls_layer_stop(self, mocker):
+        movie = Movie(1, 1)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+        spy = mocker.spy(layer, 'stop')
+
+        movie._frame(0.0)
+        movie._frame(2.0)
+
+        spy.assert_called_once()
+
+    def test_frame_calls_layer_frame(self, mocker):
+        movie = Movie(1, 1)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+        spy = mocker.spy(layer, 'frame')
+
+        for time in (0.0, 0.3, 0.9):
+            movie._frame(time)
+            spy.assert_called_with(time)
+            spy.reset_mock()
