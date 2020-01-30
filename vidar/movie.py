@@ -54,6 +54,21 @@ class Movie:
                 if layer.active:
                     layer.stop()
 
+    def screenshot(self, time, filename, file=None):
+        """Saves a screenshot of the movie to a file or file-like object
+
+        Keyword arguments:
+        time -- the time in seconds to take a screenshot at
+        filename -- where to write the file, or hint of output format
+        file -- file-like object to write to (optional)
+        """
+        self._frame(time)
+
+        pyglet.image.get_buffer_manager() \
+            .get_color_buffer() \
+            .get_image_data() \
+            .save(filename=filename, file=file)
+
     class Tracks(list):
         def __init__(self, movie, iterable=()):
             list.__init__(self, iterable)

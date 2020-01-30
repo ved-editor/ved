@@ -1,5 +1,10 @@
+import io
+import os
+
 import pytest   # noqa F401
 import pyglet
+from imageio import imread
+import numpy as np
 
 from vidar.movie import Movie
 from vidar.layer import Layer
@@ -90,3 +95,29 @@ class TestMovie:
             movie._frame(time)
             spy.assert_called_with(time)
             spy.reset_mock()
+
+    def test_screenshot_can_save_to_path(self):
+        movie = Movie(1, 1)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+
+        movie.screenshot(0.0, 'screenshot.png')
+
+        assert np.array_equal(
+            imread('screenshot.png'),
+            np.array([[[0, 0, 0, 255]]]))
+        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
+
+    def test_screenshot_can_write_to_stream(self):
+        movie = Movie(1, 1)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+        stream = io.BytesIO()
+
+        movie.screenshot(0.0, filename='screenshot.png', file=stream)
+        movie.screenshot(0.0, 'screenshot.png')
+
+        stream.seek(0)
+        with open('screenshot.png', 'rb') as file:
+            assert file.read() == stream.read()
+        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
