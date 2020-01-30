@@ -35,6 +35,13 @@ class Movie:
         for time, layer in value:
             layer.attach(self)
 
+    @property
+    def duration(self):
+        duration = 0.0
+        for time, layer in self.tracks:
+            duration = max(duration, time + layer.duration)
+        return duration
+
     def _frame(self, time):
         self._draw()
         self._process_layers(time)
