@@ -10,6 +10,7 @@ flake8 = "*"
 [packages]
 pyglet = "*"
 pytest-mock = "*"
+numpy = "*"
 
 [requires]
 python_version = "3"
