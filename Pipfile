@@ -12,6 +12,7 @@ flake8 = "*"
 pyglet = "*"
 numpy = "*"
 imageio = "*"
+imageio-ffmpeg = "*"
 
 [requires]
 python_version = "3"
