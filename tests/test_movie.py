@@ -3,7 +3,7 @@ import os
 
 import pytest   # noqa F401
 import pyglet
-from imageio import imread
+import imageio
 import numpy as np
 
 from vidar.movie import Movie
@@ -97,6 +97,35 @@ class TestMovie:
             spy.assert_called_with(time)
             spy.reset_mock()
 
+    def test_export_can_save_to_path(self):
+        movie = Movie(16, 16)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+
+        movie.export('video.mp4', 24)
+
+        video = imageio.get_reader('video.mp4', format='FFMPEG')
+
+        assert np.array_equal(
+            list(video),
+            list(np.array([[[[0, 0, 0] for pixel in range(16)]
+                for row in range(16)] for frame in range(25)])))
+        os.remove(os.path.join(os.getcwd(), 'video.mp4'))
+
+    def test_export_can_save_to_stream(self):
+        movie = Movie(16, 16)
+        layer = Layer(10.0)
+        movie.add_layer(0.0, layer)
+        stream = io.BytesIO()
+
+        movie.export('video.mp4', 24)
+        movie.export('video.mp4', 24, file=stream)
+
+        stream.seek(0)
+        with open('video.mp4', 'rb') as file:
+            assert file.read() == stream.read()
+        os.remove(os.path.join(os.getcwd(), 'video.mp4'))
+
     def test_screenshot_can_save_to_path(self):
         movie = Movie(1, 1)
         layer = Layer(1.0)
@@ -105,11 +134,11 @@ class TestMovie:
         movie.screenshot(0.0, 'screenshot.png')
 
         assert np.array_equal(
-            imread('screenshot.png'),
+            imageio.imread('screenshot.png'),
             np.array([[[0, 0, 0, 255]]]))
         os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
 
-    def test_screenshot_can_write_to_stream(self):
+    def test_screenshot_can_save_to_stream(self):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)

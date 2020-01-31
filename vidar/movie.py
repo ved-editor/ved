@@ -1,5 +1,9 @@
+from subprocess import PIPE, DEVNULL
+import io
+
 import pyglet
 from pyglet.gl import *  # noqa F403
+from ffmpy import FFmpeg
 
 
 class Movie:
@@ -60,6 +64,54 @@ class Movie:
             else:
                 if layer.active:
                     layer.stop()
+
+    def export(self, filename, fps, file=None,
+    start_time=None, end_time=None):
+        """Renders and saves part or all of the movie to a file or file-like object
+
+        Keyword arguments:
+        filename -- where to write the file, or hint of output format
+        fps -- frames per second; note that this does *not* depend on the movie
+        file -- file-like object to write to (optional)
+        start_time -- starting time of the clip (default 0.0)
+        end_time -- ending time of the clip (default self.duration)
+        """
+        def chunks(lst, n):
+            """Yield successive n-sized chunks from lst."""
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
+
+        if start_time is None:
+            start_time = 0.0
+        if end_time is None:
+            end_time = self.duration
+        close_file = False   # close the file when done if we created it here
+        if file is None:
+            file = open(filename, 'wb')
+            close_file = True
+        format = filename[filename.rfind('.') + 1:]
+
+        screenshots = io.BytesIO()
+        time = start_time
+        while time < end_time:
+            self.screenshot(time, 'frame.png', file=screenshots)
+            time += 1.0 / fps
+
+        screenshots.seek(0)
+        ff = FFmpeg(
+            inputs={'pipe:': '-f image2pipe -framerate {}'
+                .format(fps)},
+            outputs={'pipe:':
+                '-f {} -movflags frag_keyframe+empty_moov'
+                .format(format)})
+
+        stdout, stderr = ff.run(input_data=screenshots.read(),
+            stdout=PIPE, stderr=DEVNULL)
+        if stderr:
+            raise RuntimeError(stderr)
+        file.write(bytes(stdout))
+        if close_file:
+            file.close()
 
     def screenshot(self, time, filename, file=None):
         """Saves a screenshot of the movie to a file or file-like object
