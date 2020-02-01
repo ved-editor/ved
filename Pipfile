@@ -5,11 +5,11 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+pytest-mock = "*"
 flake8 = "*"
 
 [packages]
 pyglet = "*"
-pytest-mock = "*"
 numpy = "*"
 imageio = "*"
 
