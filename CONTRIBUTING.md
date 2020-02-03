@@ -14,7 +14,7 @@ cd vidar-python
 
 Next, install the dependencies:
 ```
-pipenv install
+pipenv install --dev
 ```
 
 Finally, activate the Pipenv shell so you can run the project:
