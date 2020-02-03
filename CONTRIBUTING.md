@@ -4,7 +4,7 @@
 
 ## Setting up your environment
 
-You will need Git and Pipenv and FFmpeg installed on your system.
+You will need Git, Pipenv and FFmpeg installed on your system.
 
 First [fork the repository](https://github.com/vidar-python/vidar-python/fork). Then, clone your fork and enter it:
 ```
@@ -26,7 +26,7 @@ pipenv shell
 
 To execute the tests run
 ```
-pipenv run python -m pytest
+pipenv run test
 ```
 
 ## Making Changes
@@ -46,7 +46,7 @@ First write the tests, and then make the changes:
 
 Before you push, make sure to lint your code:
 ```
-pipenv run python -m pylint vidar-python
+pipenv run lint
 ```
 
 ## Submitting Your Changes
