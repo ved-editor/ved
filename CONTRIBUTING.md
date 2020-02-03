@@ -4,11 +4,11 @@
 
 ## Setting up your environment
 
-You will need Git and Pipenv installed on your system.
+You will need Git and Pipenv and FFmpeg installed on your system.
 
 First [fork the repository](https://github.com/vidar-python/vidar-python/fork). Then, clone your fork and enter it:
 ```
-git clone https://github.com/vidar-python/vidar-python
+git clone https://github.com/vidar-python/vidar-python.git
 cd vidar-python
 ```
 
