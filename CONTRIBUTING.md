@@ -8,7 +8,7 @@ You will need Git, Pipenv and FFmpeg installed on your system.
 
 First [fork the repository](https://github.com/vidar-python/vidar-python/fork). Then, clone your fork and enter it:
 ```
-git clone https://github.com/vidar-python/vidar-python.git
+git clone https://github.com/YOUR_NAME/vidar-python.git
 cd vidar-python
 ```
 
