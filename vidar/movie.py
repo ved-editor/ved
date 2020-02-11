@@ -58,18 +58,6 @@ class Movie:
         start_time, layer = track
         layer.active = False    # Clear active flag directly
 
-    def _render(self, time):
-        self._draw()
-        self._process_tracks(time)
-
-    def _draw(self):
-        glClearColor(*self.background)
-        glClear(GL_COLOR_BUFFER_BIT)
-
-    def _process_tracks(self, time):
-        for track in self.tracks:
-            self._process_track(track, time)
-
     def _process_track(self, track, time):
         start_time, layer = track
         end_time = start_time + layer.duration
@@ -80,6 +68,33 @@ class Movie:
         else:
             if layer.active:
                 layer.stop()
+
+    def _process_tracks(self, time):
+        for track in self.tracks:
+            self._process_track(track, time)
+
+    def _draw(self):
+        glClearColor(*self.background)
+        glClear(GL_COLOR_BUFFER_BIT)
+
+    def _render(self, time):
+        self._process_tracks(time)
+        self._draw()
+
+    def screenshot(self, time, filename, file=None):
+        """Saves a screenshot of the movie to a file or file-like object
+
+        Keyword arguments:
+        time -- the time in seconds to take a screenshot at
+        filename -- where to write the file, or hint of output format
+        file -- file-like object to write to (optional)
+        """
+        self._render(time)
+
+        pyglet.image.get_buffer_manager() \
+            .get_color_buffer() \
+            .get_image_data() \
+            .save(filename=filename, file=file)
 
     def _export_images(self, fps: float) -> bytes:
         """Render the image data of the video as a sequence of file-like
@@ -156,21 +171,6 @@ class Movie:
         file.write(bytes(stdout))
         if close_file:
             file.close()
-
-    def screenshot(self, time, filename, file=None):
-        """Saves a screenshot of the movie to a file or file-like object
-
-        Keyword arguments:
-        time -- the time in seconds to take a screenshot at
-        filename -- where to write the file, or hint of output format
-        file -- file-like object to write to (optional)
-        """
-        self._render(time)
-
-        pyglet.image.get_buffer_manager() \
-            .get_color_buffer() \
-            .get_image_data() \
-            .save(filename=filename, file=file)
 
     class Tracks(list):
         def __init__(self, movie, iterable=()):
