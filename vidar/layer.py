@@ -21,8 +21,15 @@ class Layer:
         """Activate the layer"""
         self.active = True
 
-    def frame(self, time):
-        """Do a single frame of the video
+    def render(self, time):
+        """Draw any visual content to pyglet
+
+        Keyword arguments:
+        time -- the time of the frame relative to the layer
+        """
+
+    def sample(self, time):
+        """Return the audio sample at a particular time
 
         Keyword arguments:
         time -- the time of the frame relative to the layer

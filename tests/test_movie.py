@@ -50,11 +50,11 @@ class TestMovie:
 
         spy.assert_called_once()
 
-    def test_frame_shows_background_with_no_layers(self):
+    def test_render_shows_background_with_no_layers(self):
         PURPLE = (255, 0, 255, 255)
         w = h = 1
         movie = Movie(w, h, background=PURPLE)
-        movie._frame(0.0)
+        movie._render(0.0)
         expected_data = list(w * h * PURPLE)
 
         image_data = pyglet.image.get_buffer_manager() \
@@ -64,24 +64,25 @@ class TestMovie:
 
         assert actual_data == expected_data
 
-    def test_frame_calls_layer_start(self, mocker):
+    def test_process_track_calls_layer_start(self, mocker):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
         spy = mocker.spy(layer, 'start')
 
-        movie._frame(0.0)
+        movie._process_track(movie.tracks[0], 0.0)
 
         spy.assert_called_once()
 
-    def test_frame_calls_layer_stop(self, mocker):
+    def test_process_track_calls_layer_stop(self, mocker):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
         spy = mocker.spy(layer, 'stop')
+        track = movie.tracks[0]
 
-        movie._frame(0.0)
-        movie._frame(2.0)
+        movie._process_track(track, 0.0)
+        movie._process_track(track, 2.0)
 
         spy.assert_called_once()
 
