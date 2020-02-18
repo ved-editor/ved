@@ -1,9 +1,13 @@
-from subprocess import PIPE, DEVNULL
-import io
+import subprocess
+from io import BytesIO
+import tempfile
+import os
+from shutil import rmtree
 
 import pyglet
 from pyglet.gl import *  # noqa F403
-from ffmpy import FFmpeg
+
+from .media import MediaLayer
 
 
 class Movie:
@@ -46,67 +50,107 @@ class Movie:
             duration = max(duration, time + layer.duration)
         return duration
 
-    def _frame(self, time):
+    def _reset(self):
+        for track in self.tracks:
+            self._reset_track(track)
+
+    def _reset_track(self, track):
+        start_time, layer = track
+        layer.active = False    # Clear active flag directly
+
+    def _render(self, time):
         self._draw()
-        self._process_layers(time)
+        self._process_tracks(time)
 
     def _draw(self):
         glClearColor(*self.background)
         glClear(GL_COLOR_BUFFER_BIT)
 
-    def _process_layers(self, time):
-        for start_time, layer in self.tracks:
-            end_time = start_time + layer.duration
-            if start_time <= time < end_time:
-                if not layer.active:
-                    layer.start()
-                layer.frame(time)
-            else:
-                if layer.active:
-                    layer.stop()
+    def _process_tracks(self, time):
+        for track in self.tracks:
+            self._process_track(track, time)
 
-    def export(self, filename, fps, file=None,
-    start_time=None, end_time=None):
-        """Renders and saves part or all of the movie to a file or file-like object
+    def _process_track(self, track, time):
+        start_time, layer = track
+        end_time = start_time + layer.duration
+        if start_time <= time < end_time:
+            if not layer.active:
+                layer.start()
+            layer.render(time - start_time)
+        else:
+            if layer.active:
+                layer.stop()
+
+    def _export_images(self, fps: float) -> bytes:
+        """Render the image data of the video as a sequence of file-like
+        objects and concatenate them.
+        """
+        screenshots = BytesIO()
+        time = 0.0
+        while time < self.duration:
+            self.screenshot(time, 'frame.png', file=screenshots)
+            time += 1.0 / fps
+        return screenshots.getvalue()
+
+    def _export_audio_clips(self) -> list:
+        """Sample the audio data of each layer.
+
+        Returns:
+            a list of tuples of the form (start_time, audio_data) where
+            audio_data is a file-like object
+        """
+        def has_audio(layer):
+            return isinstance(layer, MediaLayer) \
+                and layer.audio_format is not None
+
+        return [(time, layer.get_audio_data()) for time, layer in self.tracks
+            if has_audio(layer)]
+
+    def _prepare_export_command(self, fps, format, tmp):
+        # Since ffmpeg has a hard time with multiple piped inputs, only pipe
+        # images and save the audio to temporary files.
+        audio_clips = self._export_audio_clips()
+
+        cmd = 'ffmpeg -r {} -f png_pipe -i pipe: '.format(fps)
+        audio_id = 0
+        for start_time, audio_data in audio_clips:
+            clip_path = os.path.join(tmp, 'audio_{}'.format(audio_id))
+            with open(clip_path, 'wb') as f:
+                f.write(audio_data)
+            cmd += '-itsoffset {} -f wav -i {} '.format(start_time, clip_path)
+            audio_id += 1
+        cmd += '-c:v libx264 -c:a aac -pix_fmt yuv420p -crf 23 -r {} ' \
+            .format(fps)
+        cmd += '-y -f {} -movflags frag_keyframe+empty_moov ' \
+            .format(format)
+        cmd += 'pipe: -v error'
+        return cmd
+
+    def export(self, filename, fps, file=None):
+        """Render the movie to a file path or a file-like object.
 
         Keyword arguments:
         filename -- where to write the file, or hint of output format
         fps -- frames per second; note that this does *not* depend on the movie
         file -- file-like object to write to (optional)
-        start_time -- starting time of the clip (default 0.0)
-        end_time -- ending time of the clip (default self.duration)
         """
-        def chunks(lst, n):
-            """Yield successive n-sized chunks from lst."""
-            for i in range(0, len(lst), n):
-                yield lst[i:i + n]
 
-        if start_time is None:
-            start_time = 0.0
-        if end_time is None:
-            end_time = self.duration
         close_file = False   # close the file when done if we created it here
         if file is None:
             file = open(filename, 'wb')
             close_file = True
         format = filename[filename.rfind('.') + 1:]
+        tmp = tempfile.mkdtemp(prefix='vidar-')
 
-        screenshots = io.BytesIO()
-        time = start_time
-        while time < end_time:
-            self.screenshot(time, 'frame.png', file=screenshots)
-            time += 1.0 / fps
+        cmd = self._prepare_export_command(fps, format, tmp)
+        proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        input_data = self._export_images(fps)
 
-        screenshots.seek(0)
-        ff = FFmpeg(
-            inputs={'pipe:': '-f image2pipe -framerate {}'
-                .format(fps)},
-            outputs={'pipe:':
-                '-f {} -movflags frag_keyframe+empty_moov'
-                .format(format)})
+        stdout, stderr = proc.communicate(input=input_data)
 
-        stdout, stderr = ff.run(input_data=screenshots.read(),
-            stdout=PIPE, stderr=DEVNULL)
+        rmtree(tmp)
+
         if stderr:
             raise RuntimeError(stderr)
         file.write(bytes(stdout))
@@ -121,7 +165,7 @@ class Movie:
         filename -- where to write the file, or hint of output format
         file -- file-like object to write to (optional)
         """
-        self._frame(time)
+        self._render(time)
 
         pyglet.image.get_buffer_manager() \
             .get_color_buffer() \

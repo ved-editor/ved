@@ -1,5 +1,6 @@
 import io
 import os
+from os.path import dirname, join
 
 import pytest   # noqa F401
 import pyglet
@@ -8,6 +9,7 @@ import numpy as np
 
 from vidar.movie import Movie
 from vidar.layer import Layer
+from vidar.media import MediaLayer
 
 
 class TestMovie:
@@ -86,16 +88,24 @@ class TestMovie:
 
         spy.assert_called_once()
 
-    def test_frame_calls_layer_frame(self, mocker):
+    def test_export_images_is_not_empty(self):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
-        spy = mocker.spy(layer, 'frame')
 
-        for time in (0.0, 0.3, 0.9):
-            movie._frame(time)
-            spy.assert_called_with(time)
-            spy.reset_mock()
+        assert len(movie._export_images(10)) > 0
+
+    def test_export_audio_clips_is_correct_size(self):
+        movie = Movie(1, 1)
+        path = join(dirname(__file__), 'assets', 'audio.wav')
+        layer1 = MediaLayer(path)
+        layer2 = MediaLayer(path)
+        movie.add_layer(0.0, layer1)
+        movie.add_layer(0.0, layer2)
+
+        audio_clips = movie._export_audio_clips()
+
+        assert len(audio_clips) == 2
 
     def test_export_can_save_to_path(self):
         movie = Movie(16, 16)
