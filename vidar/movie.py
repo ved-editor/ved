@@ -7,7 +7,7 @@ from shutil import rmtree
 import pyglet
 from pyglet.gl import *  # noqa F403
 
-from .media import MediaLayer
+from .audio import AudioLayer
 
 
 class Movie:
@@ -115,7 +115,7 @@ class Movie:
             audio_data is a file-like object
         """
         def has_audio(layer):
-            return isinstance(layer, MediaLayer) \
+            return isinstance(layer, AudioLayer) \
                 and layer.audio_format is not None
 
         return [(time, layer.get_audio_data()) for time, layer in self.tracks
