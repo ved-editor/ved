@@ -116,11 +116,10 @@ class TestMovie:
         movie.export('video.mp4', 24)
 
         video = imageio.get_reader('video.mp4', format='FFMPEG')
-
-        assert np.array_equal(
-            list(video),
-            list(np.array([[[[0, 0, 0] for pixel in range(16)]
-                for row in range(16)] for frame in range(25)])))
+        for frame in video:
+            for row in frame:
+                for pixel in row:
+                    assert np.array_equal(np.array([0, 0, 0]), pixel)
         os.remove(os.path.join(os.getcwd(), 'video.mp4'))
 
     def test_export_can_save_to_stream(self):
@@ -133,7 +132,7 @@ class TestMovie:
 
         stream.seek(0)
         video = imageio.get_reader(uri=stream, format='mp4')
-        assert np.array_equal(
-            list(video),
-            list(np.array([[[[0, 0, 0] for pixel in range(16)]
-                for row in range(16)] for frame in range(25)])))
+        for frame in video:
+            for row in frame:
+                for pixel in row:
+                    assert np.array_equal(np.array([0, 0, 0]), pixel)
