@@ -58,16 +58,10 @@ class MediaLayer(AudioLayer):
         self.buffer_pos = 0
 
 
+# TODO: move to visual module(s) when they are implemented
 class VideoFormat:
     def __init__(self, width, height, sample_aspect, frame_rate):
         self.width = width
         self.height = height
         self.sample_aspect = sample_aspect
         self.frame_rate = frame_rate
-
-
-class AudioFormat:
-    def __init__(self, channels, sample_size, sample_rate):
-        self.channels = channels
-        self.sample_size = sample_size
-        self.sample_rate = sample_rate

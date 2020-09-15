@@ -12,6 +12,8 @@ class AudioLayer(Layer):
     def __init__(self, duration):
         super().__init__(duration)
 
+        self.audio_format = AudioFormat(1, 8, 44100)
+
     def sample(self, time):
         """Sample the next frame"""
         return 0.0  # silence
@@ -20,7 +22,7 @@ class AudioLayer(Layer):
         """Return the bytes for a wave file containing the audio of the layer
         """
         if self.audio_format is None:
-            raise ValueError('no audio data available')
+            raise ValueError('no audio format specified')
         fmt = self.audio_format
         data = BytesIO()
         # Note that there are multiple samples per frame if there is more than
@@ -46,3 +48,10 @@ class AudioLayer(Layer):
         wav.setframerate(fmt.sample_rate)
         wav.writeframes(data.getvalue())
         return f.getvalue()
+
+
+class AudioFormat:
+    def __init__(self, channels, sample_size, sample_rate):
+        self.channels = channels
+        self.sample_size = sample_size
+        self.sample_rate = sample_rate
