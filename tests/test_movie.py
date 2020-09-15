@@ -8,7 +8,6 @@ import numpy as np
 
 from vidar.movie import Movie
 from vidar.layer import Layer
-from vidar.media import MediaLayer
 
 
 class TestMovie:
@@ -51,57 +50,65 @@ class TestMovie:
 
         spy.assert_called_once()
 
-    def test_render_without_any_layers_calls_glClearColor_once(self, mocker):
+    def test_screenshot_without_any_layers_calls_glClearColor_once(self, mocker):
         # mock where it's used
         mocked_glClearColor = mocker.patch('vidar.movie.glClearColor')
-
         PURPLE = (255, 0, 255, 255)
         w = h = 1
         movie = Movie(w, h, background=PURPLE)
-        movie._render(0.0)
+
+        movie.screenshot(0.0, '.png', io.BytesIO())
 
         mocked_glClearColor.assert_called_once_with(*PURPLE)
 
-    def test_process_track_calls_layer_start(self, mocker):
+    def test_screenshot_calls_layer_start(self, mocker):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
         spy = mocker.spy(layer, 'start')
 
-        movie._process_track(movie.tracks[0], 0.0)
+        movie.screenshot(0.0, '.png', io.BytesIO())
 
         spy.assert_called_once()
 
-    def test_process_track_calls_layer_stop(self, mocker):
+    def test_screenshots_calls_layer_stop(self, mocker):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
         spy = mocker.spy(layer, 'stop')
-        track = movie.tracks[0]
 
-        movie._process_track(track, 0.0)
-        movie._process_track(track, 2.0)
+        # start
+        movie.screenshot(0.0, '.png', io.BytesIO())
+        # stop
+        movie.screenshot(2.0, '.png', io.BytesIO())
 
         spy.assert_called_once()
 
-    def test_export_images_is_not_empty(self):
+    def test_screenshot_can_save_to_path(self):
         movie = Movie(1, 1)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
 
-        assert len(movie._export_images(10)) > 0
+        movie.screenshot(0.0, 'screenshot.png')
 
-    def test_export_audio_clips_is_correct_size(self):
+        assert np.array_equal(
+            imageio.imread('screenshot.png'),
+            np.array([[[0, 0, 0, 255]]]))
+        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
+
+    def test_screenshot_can_save_to_stream(self):
         movie = Movie(1, 1)
-        path = join(dirname(__file__), 'assets', 'audio.wav')
-        layer1 = MediaLayer(path)
-        layer2 = MediaLayer(path)
-        movie.add_layer(0.0, layer1)
-        movie.add_layer(0.0, layer2)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+        stream = io.BytesIO()
 
-        audio_clips = movie._export_audio_clips()
+        movie.screenshot(0.0, filename='screenshot.png', file=stream)
+        movie.screenshot(0.0, 'screenshot.png')
 
-        assert len(audio_clips) == 2
+        stream.seek(0)
+        with open('screenshot.png', 'rb') as file:
+            assert file.read() == stream.read()
+        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
 
     def test_export_can_save_to_path(self):
         movie = Movie(16, 16)
@@ -132,28 +139,3 @@ class TestMovie:
             assert file.read() == stream.read()
         os.remove(os.path.join(os.getcwd(), 'video.mp4'))
 
-    def test_screenshot_can_save_to_path(self):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-
-        movie.screenshot(0.0, 'screenshot.png')
-
-        assert np.array_equal(
-            imageio.imread('screenshot.png'),
-            np.array([[[0, 0, 0, 255]]]))
-        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
-
-    def test_screenshot_can_save_to_stream(self):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-        stream = io.BytesIO()
-
-        movie.screenshot(0.0, filename='screenshot.png', file=stream)
-        movie.screenshot(0.0, 'screenshot.png')
-
-        stream.seek(0)
-        with open('screenshot.png', 'rb') as file:
-            assert file.read() == stream.read()
-        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
