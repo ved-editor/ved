@@ -1,6 +1,5 @@
 import io
 import os
-from os.path import dirname, join
 
 import pytest   # noqa F401
 import imageio
@@ -102,13 +101,12 @@ class TestMovie:
         movie.add_layer(0.0, layer)
         stream = io.BytesIO()
 
-        movie.screenshot(0.0, filename='screenshot.png', file=stream)
-        movie.screenshot(0.0, 'screenshot.png')
+        movie.screenshot(0.0, filename='.png', file=stream)
 
         stream.seek(0)
-        with open('screenshot.png', 'rb') as file:
-            assert file.read() == stream.read()
-        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
+        assert np.array_equal(
+            imageio.imread(uri=stream, format='png'),
+            np.array([[[0, 0, 0, 255]]]))
 
     def test_export_can_save_to_path(self):
         movie = Movie(16, 16)
@@ -131,11 +129,11 @@ class TestMovie:
         movie.add_layer(0.0, layer)
         stream = io.BytesIO()
 
-        movie.export('video.mp4', 24)
-        movie.export('video.mp4', 24, file=stream)
+        movie.export('.mp4', 24, file=stream)
 
         stream.seek(0)
-        with open('video.mp4', 'rb') as file:
-            assert file.read() == stream.read()
-        os.remove(os.path.join(os.getcwd(), 'video.mp4'))
-
+        video = imageio.get_reader(uri=stream, format='mp4')
+        assert np.array_equal(
+            list(video),
+            list(np.array([[[[0, 0, 0] for pixel in range(16)]
+                for row in range(16)] for frame in range(25)])))
