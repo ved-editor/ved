@@ -3,7 +3,6 @@ import os
 from os.path import dirname, join
 
 import pytest   # noqa F401
-import pyglet
 import imageio
 import numpy as np
 
@@ -52,19 +51,16 @@ class TestMovie:
 
         spy.assert_called_once()
 
-    def test_render_shows_background_with_no_layers(self):
+    def test_render_without_any_layers_calls_glClearColor_once(self, mocker):
+        # mock where it's used
+        mocked_glClearColor = mocker.patch('vidar.movie.glClearColor')
+
         PURPLE = (255, 0, 255, 255)
         w = h = 1
         movie = Movie(w, h, background=PURPLE)
         movie._render(0.0)
-        expected_data = list(w * h * PURPLE)
 
-        image_data = pyglet.image.get_buffer_manager() \
-            .get_color_buffer() \
-            .get_image_data()
-        actual_data = list(image_data.get_data('RGBA'))
-
-        assert actual_data == expected_data
+        mocked_glClearColor.assert_called_once_with(*PURPLE)
 
     def test_process_track_calls_layer_start(self, mocker):
         movie = Movie(1, 1)
