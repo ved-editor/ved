@@ -167,7 +167,7 @@ class Movie:
         rmtree(tmp)
 
         if stderr:
-            raise RuntimeError(stderr)
+            raise RuntimeError('Error running `{}`:\n{}'.format(cmd, stderr))
         file.write(bytes(stdout))
         if close_file:
             file.close()
