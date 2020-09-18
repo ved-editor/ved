@@ -6,10 +6,10 @@
 
 You will need Git, Pipenv and FFmpeg installed on your system.
 
-First [fork the repository](https://github.com/ved-python/ved-python/fork). Then, clone your fork and enter it:
+First [fork the repository](https://github.com/ved-editor/ved/fork). Then, clone your fork and enter it:
 ```
-git clone https://github.com/YOUR_NAME/ved-python.git
-cd ved-python
+git clone https://github.com/YOUR_NAME/ved.git
+cd ved
 ```
 
 Next, install the dependencies:
@@ -31,7 +31,7 @@ pipenv run test
 
 ## Making Changes
 
-Pick a [feature or bugfix](https://github.com/ved-python/ved-python/issues) to implement. Then, checkout a new topic branch for your work:
+Pick a [feature or bugfix](https://github.com/ved-editor/ved/issues) to implement. Then, checkout a new topic branch for your work:
 ```
 git checkout -b my_feature
 ```
