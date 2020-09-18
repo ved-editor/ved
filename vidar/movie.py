@@ -136,9 +136,8 @@ class Movie:
             audio_id += 1
         cmd += '-c:v libx264 -c:a aac -pix_fmt yuv420p -crf 23 -r {} ' \
             .format(fps)
-        cmd += '-y -f {} -movflags frag_keyframe+empty_moov ' \
-            .format(format)
-        cmd += 'pipe: -v error'
+        cmd += '-y -f {} -movflags frag_keyframe+empty_moov '.format(format)
+        cmd += '-max_interleave_delta 0 pipe: -v error'
         return cmd
 
     def export(self, filename, fps, file=None):
