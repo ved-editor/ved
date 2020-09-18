@@ -1,6 +1,7 @@
 import io
 import os
 from os.path import dirname, join
+import subprocess
 
 import pytest   # noqa F401
 import imageio
@@ -51,7 +52,8 @@ class TestMovie:
 
         spy.assert_called_once()
 
-    def test_screenshot_without_any_layers_calls_glClearColor_once(self, mocker):
+    def test_screenshot_without_any_layers_calls_glClearColor_once(self,
+    mocker):
         # mock where it's used
         mocked_glClearColor = mocker.patch('vidar.movie.glClearColor')
         PURPLE = (255, 0, 255, 255)
@@ -140,12 +142,13 @@ class TestMovie:
                     assert np.array_equal(np.array([0, 0, 0]), pixel)
 
     def test_export_can_save_audio_data_to_path(self, mocker):
-        movie = Movie(2, 2) # width needs to be divisible by 2 for ffmpeg
+        movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
         layer = AudioLayer(1.0, 1, None, None)
         # get_audio_data returns the audio data in wav format, so we can mock
         # that to return the contents of a real wav file.
         mocked_get_audio_data = mocker.patch.object(layer, 'get_audio_data')
-        with open(join(dirname(__file__), 'assets', 'audio.wav'), 'rb') as audio:
+        wav_path = join(dirname(__file__), 'assets', 'audio.wav')
+        with open(wav_path, 'rb') as audio:
             mocked_get_audio_data.return_value = audio.read()
         movie.add_layer(0.0, layer)
 
@@ -164,12 +167,13 @@ class TestMovie:
         os.remove(os.path.join(os.getcwd(), 'video.mp4'))
 
     def test_export_can_save_audio_data_to_stream(self, mocker):
-        movie = Movie(2, 2) # width needs to be divisible by 2 for ffmpeg
+        movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
         layer = AudioLayer(1.0, 1, None, None)
         # get_audio_data returns the audio data in wav format, so we can mock
         # that to return the contents of a real wav file.
         mocked_get_audio_data = mocker.patch.object(layer, 'get_audio_data')
-        with open(join(dirname(__file__), 'assets', 'audio.wav'), 'rb') as audio:
+        wav_path = join(dirname(__file__), 'assets', 'audio.wav')
+        with open(wav_path, 'rb') as audio:
             mocked_get_audio_data.return_value = audio.read()
         movie.add_layer(0.0, layer)
         result = io.BytesIO()
