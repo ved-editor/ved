@@ -116,7 +116,7 @@ class Movie:
         """
         def has_audio(layer):
             return isinstance(layer, AudioLayer) \
-                and layer.audio_format is not None
+                and layer.audio_format.channels > 0
 
         return [(time, layer.get_audio_data()) for time, layer in self.tracks
             if has_audio(layer)]

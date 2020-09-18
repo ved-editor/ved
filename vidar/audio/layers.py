@@ -9,10 +9,11 @@ _BUFFER_SIZE = 1 << 20  # 1 MB
 
 
 class AudioLayer(Layer):
-    def __init__(self, duration):
+    def __init__(self, duration, channels, sample_size, sample_rate):
         super().__init__(duration)
 
-        self.audio_format = AudioFormat(1, 8, 44100)
+        self.audio_format = AudioFormat(channels, sample_size,
+            sample_rate)
 
     def sample(self, time):
         """Sample the next frame"""

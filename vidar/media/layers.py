@@ -10,15 +10,18 @@ _BUFFER_SIZE = 1 << 20  # 1 MB
 
 class MediaLayer(AudioLayer):
     def __init__(self, file):
-        super().__init__(file)
-        self.media = pyglet.media.load(file)
-        video_fmt, audio_fmt = self.media.video_format, self.media.audio_format
+        media = pyglet.media.load(file)
+        video_fmt, audio_fmt = media.video_format, media.audio_format
+        if audio_fmt:
+            super().__init__(media.duration, audio_fmt.channels,
+                audio_fmt.sample_size, audio_fmt.sample_rate)
+        else:
+            super().__init__(media.duration, channels=0, sample_size=None,
+                sample_rate=None)
+        self.media = media
         self.video_format = VideoFormat(
             video_fmt.width, video_fmt.height, video_fmt.sample_aspect,
             video_fmt.frame_rate) if video_fmt else None
-        self.audio_format = AudioFormat(
-            audio_fmt.channels, audio_fmt.sample_size,
-            audio_fmt.sample_rate) if audio_fmt else None
         self.duration = self.media.duration
 
         if type(file) is str:
