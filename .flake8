@@ -2,4 +2,4 @@
 ignore=E128
 
 per-file-ignores=
-    vidar/movie.py:F405
+    ved/movie.py:F405

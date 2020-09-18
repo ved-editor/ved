@@ -5,7 +5,7 @@ from io import BytesIO
 
 import pytest   # noqa F401
 
-from vidar.media import MediaLayer
+from ved.media import MediaLayer
 
 
 class TestMedia:

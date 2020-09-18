@@ -11,7 +11,7 @@ from .audio import AudioLayer
 
 
 class Movie:
-    """A movie is an instance of Vidar that acts as a container for layers"""
+    """A movie is an instance of ved that acts as a container for layers"""
 
     def __init__(self, width: int, height: int, background=(0, 0, 0, 1)):
         self.width = width
@@ -154,7 +154,7 @@ class Movie:
             file = open(filename, 'wb')
             close_file = True
         format = filename[filename.rfind('.') + 1:]
-        tmp = tempfile.mkdtemp(prefix='vidar-')
+        tmp = tempfile.mkdtemp(prefix='ved-')
 
         cmd = self._prepare_export_command(fps, format, tmp)
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,

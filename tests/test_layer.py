@@ -1,6 +1,6 @@
 import pytest   # noqa F401
 
-# from vidar.layer import Layer
+# from ved.layer import Layer
 
 
 class TestLayer:

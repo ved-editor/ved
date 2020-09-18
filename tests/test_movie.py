@@ -7,9 +7,9 @@ import pytest   # noqa F401
 import imageio
 import numpy as np
 
-from vidar.movie import Movie
-from vidar.layer import Layer
-from vidar.audio import AudioLayer
+from ved.movie import Movie
+from ved.layer import Layer
+from ved.audio import AudioLayer
 
 
 class TestMovie:
@@ -55,7 +55,7 @@ class TestMovie:
     def test_screenshot_without_any_layers_calls_glClearColor_once(self,
     mocker):
         # mock where it's used
-        mocked_glClearColor = mocker.patch('vidar.movie.glClearColor')
+        mocked_glClearColor = mocker.patch('ved.movie.glClearColor')
         PURPLE = (255, 0, 255, 255)
         w = h = 1
         movie = Movie(w, h, background=PURPLE)

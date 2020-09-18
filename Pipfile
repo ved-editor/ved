@@ -18,5 +18,5 @@ imageio-ffmpeg = "*"
 python_version = "3"
 
 [scripts]
-lint = "python -m flake8 vidar tests"
+lint = "python -m flake8 ved tests"
 test = "python -m pytest"
