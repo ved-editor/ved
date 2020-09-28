@@ -2,7 +2,7 @@
 
 *First off, thank you for your interest in contributing to the project! This guide will show you how to make your first code contribution*
 
-## (Optional) Step 0: Discord server
+## (Optional) Step 0: Join Discord Server
 
 We have a [discord server](https://discord.gg/V3zPQn8) for team meetings and general project discussion.
 
@@ -63,4 +63,4 @@ Try to adhere to the following rules:
 
 ### Python Styleguide
 
-> Run `pipenv run lint` to lint. See [PEP8](https://www.python.org/dev/peps/pep-0008/#introduction) for additional information.
+Run `pipenv run lint` to lint. See [PEP8](https://www.python.org/dev/peps/pep-0008/#introduction) for additional information.
