@@ -6,11 +6,11 @@ verify_ssl = true
 [dev-packages]
 pytest = "*"
 pytest-mock = "*"
+numpy = "*"
 flake8 = "*"
 
 [packages]
 pyglet = "*"
-numpy = "*"
 imageio = "*"
 imageio-ffmpeg = "*"
 Pillow = ">=7.1.0"
