@@ -82,12 +82,13 @@ class Movie:
         self._draw()
 
     def screenshot(self, time, filename, file=None):
-        """Saves a screenshot of the movie to a file or file-like object
+        """
+        Saves a screenshot of the movie to a file or file-like object
 
-        Keyword arguments:
-        time -- the time in seconds to take a screenshot at
-        filename -- where to write the file, or hint of output format
-        file -- file-like object to write to (optional)
+        :param float time: the time in seconds to take a screenshot at
+        :param str filename: where to write the file, or hint of output format
+        :param file: file-like object to write to, optional
+        :type file: typing.IO, optional
         """
         self._render(time)
 
@@ -97,8 +98,9 @@ class Movie:
             .save(filename=filename, file=file)
 
     def _export_images(self, fps: float) -> bytes:
-        """Render the image data of the video as a sequence of file-like
-        objects and concatenate them.
+        """
+        Render the image data of the video as a sequence of file-like objects
+        and concatenate them.
         """
         screenshots = BytesIO()
         time = 0.0
@@ -108,11 +110,12 @@ class Movie:
         return screenshots.getvalue()
 
     def _export_audio_clips(self) -> list:
-        """Sample the audio data of each layer.
+        """
+        Sample the audio data of each layer.
 
-        Returns:
-            a list of tuples of the form (start_time, audio_data) where
+        :return: a list of tuples of the form (start_time, audio_data) where
             audio_data is a file-like object
+        :rtype: (float, typing.IO)[]
         """
         def has_audio(layer):
             return isinstance(layer, AudioLayer) \
@@ -141,12 +144,14 @@ class Movie:
         return cmd
 
     def export(self, filename, fps, file=None):
-        """Render the movie to a file path or a file-like object.
+        """
+        Render the movie to a file path or a file-like object.
 
-        Keyword arguments:
-        filename -- where to write the file, or hint of output format
-        fps -- frames per second; note that this does *not* depend on the movie
-        file -- file-like object to write to (optional)
+        :param str filename: where to write the file, or hint of output format
+        :param float fps: frames per second; note that this does *not* depend
+            on the movie
+        :param file: file-like object to write to
+        :type file: typing.IO, optional
         """
 
         close_file = False   # close the file when done if we created it here

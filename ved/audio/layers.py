@@ -17,11 +17,14 @@ class AudioLayer(Layer):
 
     def sample(self, time):
         """Sample the next frame"""
+
         return 0.0  # silence
 
     def get_audio_data(self) -> bytes:
-        """Return the bytes for a wave file containing the audio of the layer
         """
+        Return the bytes for a wave file containing the audio of the layer
+        """
+
         if self.audio_format is None:
             raise ValueError('no audio format specified')
         fmt = self.audio_format
