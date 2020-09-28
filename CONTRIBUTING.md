@@ -2,13 +2,13 @@
 
 *First off, thank you for your interest in contributing to the project! This guide will show you how to make your first code contribution*
 
-## Discord server
+## (Optional) Step 0: Discord server
 
-We have a [discord server](https://discord.gg/V3zPQn8) for meetings and general project discussion.
+We have a [discord server](https://discord.gg/V3zPQn8) for team meetings and general project discussion.
 
-## Setting up your environment
+## Step 1: Set up your Environment
 
-You will need Git, Pipenv and FFmpeg installed on your system.
+You will need Git, Pipenv and [FFmpeg](https://ffmpeg.org/download.html) installed on your system.
 
 First [fork the repository](https://github.com/ved-editor/ved/fork). Then, clone your fork and enter it:
 ```
@@ -21,39 +21,27 @@ Next, install the dependencies:
 pipenv install --dev
 ```
 
-Finally, activate the Pipenv shell so you can run the project:
-```
-pipenv shell
-```
-
-## Testing
-
-To execute the tests run
-```
-pipenv run test
-```
-
-## Making Changes
+## Step 2: Pick an Issue
 
 Pick a [feature or bugfix](https://github.com/ved-editor/ved/issues) to implement. Then, checkout a new topic branch for your work:
 ```
 git checkout -b my_feature
 ```
 
-First write the tests, and then make the changes:
+## Step 3: Make Changes
 
-1. Write unit tests that need to pass for the feature to be complete, making sure they fail when executed.
-2. Implement the changes, making sure the tests pass.
-3. Refactor, [simplifying the new code](https://www.agilealliance.org/glossary/rules-of-simplicity/) as necessary.
-
-## Linting
-
-Before you push, make sure to lint your code:
+To execute the tests run
 ```
+pipenv run test
+```
+
+As you develop, you can test and lint your code with
+```
+pipenv run test
 pipenv run lint
 ```
 
-## Submitting Your Changes
+## Step 4: Submit Your Changes
 
 Update your feature branch with `upstream/master` and push:
 ```
@@ -68,10 +56,11 @@ And open a pull request
 
 ### Git Commit Messages
 
+Try to adhere to the following rules:
 - Use the present tense ("Add feature" not "Added feature")
 - Use the imperative mood ("Save movie" not "Saves movie")
 - Try to limit the first line to 72 characters or less
 
 ### Python Styleguide
 
-> See [PEP8](https://www.python.org/dev/peps/pep-0008/#introduction)
+> Run `pipenv run lint` to lint. See [PEP8](https://www.python.org/dev/peps/pep-0008/#introduction) for additional information.
