@@ -2,6 +2,10 @@
 
 *First off, thank you for your interest in contributing to the project! This guide will show you how to make your first code contribution*
 
+## Discord server
+
+We have a [discord server](https://discord.gg/V3zPQn8) for meetings and general project discussion.
+
 ## Setting up your environment
 
 You will need Git, Pipenv and FFmpeg installed on your system.
