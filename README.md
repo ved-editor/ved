@@ -43,3 +43,11 @@ movie = Movie(1, 1)
 movie.nodes = [sine]  # same as passing nodes to the movie's constructor
 movie.export('output.wav')
 ```
+
+## Contributing
+
+See [CONTRIBUTING](CONTRIBUTING.md).
+
+## License
+
+Distributed under GNU General Public License v3. See LICENSE for more information.
