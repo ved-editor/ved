@@ -7,12 +7,12 @@ verify_ssl = true
 pytest = "*"
 pytest-mock = "*"
 numpy = "*"
+imageio = "*"
+imageio-ffmpeg = "*"
 flake8 = "*"
 
 [packages]
 pyglet = "*"
-imageio = "*"
-imageio-ffmpeg = "*"
 Pillow = ">=7.1.0"
 
 [requires]
