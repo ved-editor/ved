@@ -86,6 +86,15 @@ class Movie:
         """Call each node"""
         # TODO: Update all nodes once nodes are implemented
 
+    def play(self, start_time: float, end_time: float,
+    frame_rate: float):
+        """Call each node periodically from `start_time` to `end_time`"""
+
+        self.current_time = start_time
+        while self.current_time <= end_time:
+            self.tick()
+            self.current_time += 1.0 / frame_rate
+
     def screenshot(self, time, filename, file=None):
         """
         Saves a screenshot of the movie to a file or file-like object

@@ -51,6 +51,16 @@ class TestMovie:
 
         spy.assert_called_once()
 
+    def test_play_from_0_to_1_at_framerate_1_calls_tick_twice(self, mocker):
+        movie = Movie(1, 1)
+        layer = Layer(1.0)
+        movie.add_layer(0.0, layer)
+        spy = mocker.spy(movie, 'tick')
+
+        movie.play(0.0, 1.0, 1.0)
+
+        assert spy.call_count == 2
+
     def test_screenshot_without_any_layers_calls_glClearColor_once(self,
     mocker):
         # mock where it's used
