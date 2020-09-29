@@ -1,5 +1,4 @@
 import io
-import os
 from os.path import dirname, join
 import subprocess
 
@@ -87,18 +86,6 @@ class TestMovie:
 
         spy.assert_called_once()
 
-    def test_screenshot_can_save_to_path(self):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-
-        movie.screenshot(0.0, 'screenshot.png')
-
-        assert np.array_equal(
-            imageio.imread('screenshot.png'),
-            np.array([[[0, 0, 0, 255]]]))
-        os.remove(os.path.join(os.getcwd(), 'screenshot.png'))
-
     def test_screenshot_can_save_to_stream(self):
         movie = Movie(1, 1)
         layer = Layer(1.0)
@@ -111,20 +98,6 @@ class TestMovie:
         assert np.array_equal(
             imageio.imread(uri=stream, format='png'),
             np.array([[[0, 0, 0, 255]]]))
-
-    def test_export_can_save_image_data_to_path(self):
-        movie = Movie(2, 2)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-
-        movie.export('video.mp4', 2)
-
-        video = imageio.get_reader('video.mp4', format='FFMPEG')
-        for frame in video:
-            for row in frame:
-                for pixel in row:
-                    assert np.array_equal(np.array([0, 0, 0]), pixel)
-        os.remove(os.path.join(os.getcwd(), 'video.mp4'))
 
     def test_export_can_save_image_data_to_stream(self):
         movie = Movie(2, 2)
@@ -140,31 +113,6 @@ class TestMovie:
             for row in frame:
                 for pixel in row:
                     assert np.array_equal(np.array([0, 0, 0]), pixel)
-
-    def test_export_can_save_audio_data_to_path(self, mocker):
-        movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
-        layer = AudioLayer(1.0, 1, None, None)
-        # get_audio_data returns the audio data in wav format, so we can mock
-        # that to return the contents of a real wav file.
-        mocked_get_audio_data = mocker.patch.object(layer, 'get_audio_data')
-        wav_path = join(dirname(__file__), 'assets', 'audio.wav')
-        with open(wav_path, 'rb') as audio:
-            mocked_get_audio_data.return_value = audio.read()
-        movie.add_layer(0.0, layer)
-
-        movie.export('video.mp4', 2)
-
-        with open('video.mp4', 'rb') as result:
-            p = subprocess.Popen('ffprobe pipe: -v error', shell=True,
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            stdout, stderr = p.communicate(input=result.read())
-
-            if stderr:
-                # only errors are printed, so we know there was an error
-                raise AssertionError(stderr)
-        # If there are no ffmpeg errors, pass
-        os.remove(os.path.join(os.getcwd(), 'video.mp4'))
 
     def test_export_can_save_audio_data_to_stream(self, mocker):
         movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
