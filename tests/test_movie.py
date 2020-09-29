@@ -113,11 +113,11 @@ class TestMovie:
             np.array([[[0, 0, 0, 255]]]))
 
     def test_export_can_save_image_data_to_path(self):
-        movie = Movie(16, 16)
+        movie = Movie(2, 2)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
 
-        movie.export('video.mp4', 24)
+        movie.export('video.mp4', 2)
 
         video = imageio.get_reader('video.mp4', format='FFMPEG')
         for frame in video:
@@ -127,12 +127,12 @@ class TestMovie:
         os.remove(os.path.join(os.getcwd(), 'video.mp4'))
 
     def test_export_can_save_image_data_to_stream(self):
-        movie = Movie(16, 16)
-        layer = Layer(10.0)
+        movie = Movie(2, 2)
+        layer = Layer(1.0)
         movie.add_layer(0.0, layer)
         stream = io.BytesIO()
 
-        movie.export('.mp4', 24, file=stream)
+        movie.export('.mp4', 2, file=stream)
 
         stream.seek(0)
         video = imageio.get_reader(uri=stream, format='mp4')
@@ -152,7 +152,7 @@ class TestMovie:
             mocked_get_audio_data.return_value = audio.read()
         movie.add_layer(0.0, layer)
 
-        movie.export('video.mp4', 24)
+        movie.export('video.mp4', 2)
 
         with open('video.mp4', 'rb') as result:
             p = subprocess.Popen('ffprobe pipe: -v error', shell=True,
@@ -178,7 +178,7 @@ class TestMovie:
         movie.add_layer(0.0, layer)
         result = io.BytesIO()
 
-        movie.export('.mp4', 24, file=result)
+        movie.export('.mp4', 2, file=result)
 
         result.seek(0)
         p = subprocess.Popen('ffprobe pipe: -v error', shell=True,
