@@ -81,6 +81,10 @@ class Movie:
         self._process_tracks(time)
         self._draw()
 
+    def tick(self):
+        """Call each node"""
+        # TODO: Update all nodes once nodes are implemented
+
     def screenshot(self, time, filename, file=None):
         """
         Saves a screenshot of the movie to a file or file-like object
