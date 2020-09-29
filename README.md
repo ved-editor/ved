@@ -13,7 +13,7 @@ Ved is a video-editing framework that allows for algorithmic video-editing, whet
 video = VideoFile('input.mp4')
 
 movie = Movie(video.width, video.height, [video])
-movie.export('output.mp4',  framerate=24)
+movie.record('output.mp4',  framerate=24)
 ```
 
 *Blur an image*:
@@ -41,7 +41,7 @@ class Sine(Audio):  # extend the base audio node
 sine = Sine(800)
 movie = Movie(1, 1)
 movie.nodes = [sine]  # same as passing nodes to the movie's constructor
-movie.export('output.wav')
+movie.record('output.wav')
 ```
 
 ## Contributing

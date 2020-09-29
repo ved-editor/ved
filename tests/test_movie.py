@@ -109,13 +109,13 @@ class TestMovie:
             imageio.imread(uri=stream, format='png'),
             np.array([[[0, 0, 0, 255]]]))
 
-    def test_export_can_save_image_data_to_stream(self):
+    def test_record_can_save_image_data_to_stream(self):
         movie = Movie(2, 2)
         layer = Layer(1.0)
         movie.add_layer(0.0, layer)
         stream = io.BytesIO()
 
-        movie.export('.mp4', 2, file=stream)
+        movie.record('.mp4', 2, file=stream)
 
         stream.seek(0)
         video = imageio.get_reader(uri=stream, format='mp4')
@@ -124,7 +124,7 @@ class TestMovie:
                 for pixel in row:
                     assert np.array_equal(np.array([0, 0, 0]), pixel)
 
-    def test_export_can_save_audio_data_to_stream(self, mocker):
+    def test_record_can_save_audio_data_to_stream(self, mocker):
         movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
         layer = AudioLayer(1.0, 1, None, None)
         # get_audio_data returns the audio data in wav format, so we can mock
@@ -136,7 +136,7 @@ class TestMovie:
         movie.add_layer(0.0, layer)
         result = io.BytesIO()
 
-        movie.export('.mp4', 2, file=result)
+        movie.record('.mp4', 2, file=result)
 
         result.seek(0)
         p = subprocess.Popen('ffprobe pipe: -v error', shell=True,

@@ -111,7 +111,7 @@ class Movie:
             .get_image_data() \
             .save(filename=filename, file=file)
 
-    def _export_images(self, fps: float) -> bytes:
+    def _record_images(self, fps: float) -> bytes:
         """
         Render the image data of the video as a sequence of file-like objects
         and concatenate them.
@@ -123,7 +123,7 @@ class Movie:
             time += 1.0 / fps
         return screenshots.getvalue()
 
-    def _export_audio_clips(self) -> list:
+    def _record_audio_clips(self) -> list:
         """
         Sample the audio data of each layer.
 
@@ -138,10 +138,10 @@ class Movie:
         return [(time, layer.get_audio_data()) for time, layer in self.tracks
             if has_audio(layer)]
 
-    def _prepare_export_command(self, fps, format, tmp):
+    def _prepare_record_command(self, fps, format, tmp):
         # Since ffmpeg has a hard time with multiple piped inputs, only pipe
         # images and save the audio to temporary files.
-        audio_clips = self._export_audio_clips()
+        audio_clips = self._record_audio_clips()
 
         cmd = 'ffmpeg -r {} -f png_pipe -i pipe: '.format(fps)
         audio_id = 0
@@ -157,7 +157,7 @@ class Movie:
         cmd += '-max_interleave_delta 0 pipe: -v error'
         return cmd
 
-    def export(self, filename, fps, file=None):
+    def record(self, filename, fps, file=None):
         """
         Render the movie to a file path or a file-like object.
 
@@ -175,10 +175,10 @@ class Movie:
         format = filename[filename.rfind('.') + 1:]
         tmp = tempfile.mkdtemp(prefix='ved-')
 
-        cmd = self._prepare_export_command(fps, format, tmp)
+        cmd = self._prepare_record_command(fps, format, tmp)
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        input_data = self._export_images(fps)
+        input_data = self._record_images(fps)
 
         stdout, stderr = proc.communicate(input=input_data)
 
