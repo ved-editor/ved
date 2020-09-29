@@ -21,6 +21,7 @@ class Movie:
         self._tracks = Movie.Tracks(self)
         self._window = pyglet.window.Window(
             width=width, height=height, visible=False)
+        self.current_time = 0.0
 
     @property
     def tracks(self):
