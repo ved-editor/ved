@@ -18,6 +18,7 @@ class Video(Node):
         self.height = height
         self.output = output
 
+        # Create an opengl context for rendering this node
         self.window = pyglet.window.Window(
             width=width, height=height, visible=False)
 

@@ -63,7 +63,7 @@ class TestMovie:
 
     def test_screenshot_without_any_layers_calls_glClearColor_once(self,
     mocker):
-        # mock where it's used
+        # Mock glClearColor in the module where it is used.
         mocked_glClearColor = mocker.patch('ved.movie.glClearColor')
         PURPLE = (255, 0, 255, 255)
         w = h = 1
@@ -119,6 +119,7 @@ class TestMovie:
 
         stream.seek(0)
         video = imageio.get_reader(uri=stream, format='mp4')
+        # Every pixel in every frame should be black (0, 0, 0)
         for frame in video:
             for row in frame:
                 for pixel in row:

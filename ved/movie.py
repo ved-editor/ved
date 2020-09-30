@@ -19,6 +19,8 @@ class Movie:
         self.background = background
 
         self._tracks = Movie.Tracks(self)
+        # Create opengl context (wrapped in an invisible window).
+        # This will be used to render the final result.
         self._window = pyglet.window.Window(
             width=width, height=height, visible=False)
         self.current_time = 0.0
@@ -97,7 +99,7 @@ class Movie:
 
     def screenshot(self, time, filename, file=None):
         """
-        Saves a screenshot of the movie to a file or file-like object
+        Save a screenshot of the movie to a file or file-like object
 
         :param float time: the time in seconds to take a screenshot at
         :param str filename: where to write the file, or hint of output format
