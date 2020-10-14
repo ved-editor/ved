@@ -7,8 +7,6 @@ from shutil import rmtree
 import pyglet
 from pyglet.gl import *  # noqa F403
 
-from .audio import AudioLayer
-
 
 class Movie:
     """A movie is an instance of ved that acts as a container for layers"""
@@ -113,45 +111,16 @@ class Movie:
             .get_image_data() \
             .save(filename=filename, file=file)
 
-    def _record_images(self, fps: float) -> bytes:
-        """
-        Render the image data of the video as a sequence of file-like objects
-        and concatenate them.
-        """
-        screenshots = BytesIO()
-        time = 0.0
-        while time < self.duration:
-            self.screenshot(time, 'frame.png', file=screenshots)
-            time += 1.0 / fps
-        return screenshots.getvalue()
-
-    def _record_audio_clips(self) -> list:
-        """
-        Sample the audio data of each layer.
-
-        :return: a list of tuples of the form (start_time, audio_data) where
-            audio_data is a file-like object
-        :rtype: (float, typing.IO)[]
-        """
-        def has_audio(layer):
-            return isinstance(layer, AudioLayer) \
-                and layer.audio_format.channels > 0
-
-        return [(time, layer.get_audio_data()) for time, layer in self.tracks
-            if has_audio(layer)]
-
-    def _prepare_record_command(self, fps, format, tmp):
+    def _prepare_record_command(self, fps, format, audio, tmp):
         # Since ffmpeg has a hard time with multiple piped inputs, only pipe
         # images and save the audio to temporary files.
-        audio_clips = self._record_audio_clips()
-
         cmd = 'ffmpeg -r {} -f png_pipe -i pipe: '.format(fps)
         audio_id = 0
-        for start_time, audio_data in audio_clips:
-            clip_path = os.path.join(tmp, 'audio_{}'.format(audio_id))
+        for _, audio_data in audio:
+            clip_path = os.path.join(tmp, 'audio_{}.wav'.format(audio_id))
             with open(clip_path, 'wb') as f:
                 f.write(audio_data)
-            cmd += '-itsoffset {} -f wav -i {} '.format(start_time, clip_path)
+            cmd += '-f wav -i {} '.format(clip_path)
             audio_id += 1
         cmd += '-c:v libx264 -c:a aac -pix_fmt yuv420p -crf 23 -r {} ' \
             .format(fps)
@@ -160,15 +129,7 @@ class Movie:
         return cmd
 
     def record(self, filename, fps, file=None):
-        """
-        Render the movie to a file path or a file-like object.
-
-        :param str filename: where to write the file, or hint of output format
-        :param float fps: frames per second; note that this does *not* depend
-            on the movie
-        :param file: file-like object to write to
-        :type file: typing.IO, optional
-        """
+        """Render the movie from `start_time` to `end_time`"""
 
         close_file = False   # close the file when done if we created it here
         if file is None:
@@ -177,12 +138,25 @@ class Movie:
         format = filename[filename.rfind('.') + 1:]
         tmp = tempfile.mkdtemp(prefix='ved-')
 
-        cmd = self._prepare_record_command(fps, format, tmp)
+        # TODO: populate with tuples (clip, data) for each output audio node
+        audio = []
+        screenshots = BytesIO()
+        self.current_time = 0  # TODO: replace with start_time
+        while self.current_time <= self.duration:  # TODO: use end_time
+            self.tick()
+            # TODO: render video nodes to movie
+            self.screenshot(self.current_time, 'frame.png', file=screenshots)
+            # TODO: render video nodes to movie
+            for clip, data in audio:
+                # if clip has output, append it to data
+                pass
+            self.current_time += 1.0 / fps
+
+        cmd = self._prepare_record_command(fps, format, audio, tmp)
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        input_data = self._record_images(fps)
 
-        stdout, stderr = proc.communicate(input=input_data)
+        stdout, stderr = proc.communicate(input=screenshots.getvalue())
 
         rmtree(tmp)
 
