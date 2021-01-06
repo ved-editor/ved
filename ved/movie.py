@@ -108,11 +108,12 @@ class Movie:
         cmd += '-max_interleave_delta 0 pipe: -v error'
         return cmd
 
-    def _record_frames(self, fps):
+    def _record_frames(self, start_time, end_time, fps):
         pixel_data = BytesIO()  # concatenation of each frame's pixels
         audio_data = {}  # node: Node -> samples: BytesIO
 
-        while self.current_time <= self.duration:
+        self.current_time = start_time
+        while self.current_time <= end_time:
             self.tick()
             # Save audio samples per node (combine later)
             for node in self._get_audio_nodes():
@@ -142,8 +143,9 @@ class Movie:
 
         return pixel_data, audio_data
 
-    def record(self, filename, fps, file=None):
-        """Render the movie from the current time to the end"""
+    def record(self, filename, fps: float, start_time=0.0, end_time:
+    float = None, file=None):
+        """Render the movie from `start_time` to `end_time`"""
 
         close_file = False   # close the file when done if we created it here
         if file is None:
