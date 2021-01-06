@@ -7,61 +7,21 @@ import imageio
 import numpy as np
 
 from ved.movie import Movie
-from ved.layer import Layer
-from ved.audio import AudioLayer
+from ved.node import Node
+from ved.node.audio import Audio
 
 
 class TestMovie:
-    def test_add_layer_attaches_layer(self, mocker):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        spy = mocker.spy(layer, 'attach')
-
-        movie.add_layer(0.0, layer)
-
-        spy.assert_called_once_with(movie)
-
-    def test_tracks_append_attaches_layer(self, mocker):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        spy = mocker.spy(layer, 'attach')
-
-        movie.tracks.append((0.0, layer))
-
-        spy.assert_called_once_with(movie)
-
-    def test_remove_layer_detaches_layer(self, mocker):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-        spy = mocker.spy(layer, 'detach')
-
-        movie.remove_layer(layer)
-
-        spy.assert_called_once()
-
-    def test_tracks_filter_detaches_layer(self, mocker):
-        movie = Movie(1, 1)
-        test_layer = Layer(1.0)
-        movie.add_layer(0.0, test_layer)
-        spy = mocker.spy(test_layer, 'detach')
-
-        movie.tracks = [(time, layer) for time, layer in movie.tracks
-            if layer != test_layer]
-
-        spy.assert_called_once()
-
     def test_play_from_0_to_1_at_framerate_1_calls_tick_twice(self, mocker):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
+        node = Node(0.0, 1.0)
+        movie = Movie(1, 1, [node])
         spy = mocker.spy(movie, 'tick')
 
         movie.play(0.0, 1.0, 1.0)
 
         assert spy.call_count == 2
 
-    def test_screenshot_without_any_layers_calls_glClearColor_once(self,
+    def test_screenshot_without_nodes_calls_glClearColor_once(self,
     mocker):
         # Mock glClearColor in the module where it is used.
         mocked_glClearColor = mocker.patch('ved.movie.glClearColor')
@@ -73,33 +33,9 @@ class TestMovie:
 
         mocked_glClearColor.assert_called_once_with(*PURPLE)
 
-    def test_screenshot_calls_layer_start(self, mocker):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-        spy = mocker.spy(layer, 'start')
-
-        movie.screenshot(0.0, '.png', io.BytesIO())
-
-        spy.assert_called_once()
-
-    def test_screenshots_calls_layer_stop(self, mocker):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
-        spy = mocker.spy(layer, 'stop')
-
-        # start
-        movie.screenshot(0.0, '.png', io.BytesIO())
-        # stop
-        movie.screenshot(2.0, '.png', io.BytesIO())
-
-        spy.assert_called_once()
-
     def test_screenshot_can_save_to_stream(self):
-        movie = Movie(1, 1)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
+        node = Node(0.0, 1.0)
+        movie = Movie(1, 1, [node])
         stream = io.BytesIO()
 
         movie.screenshot(0.0, filename='.png', file=stream)
@@ -110,9 +46,8 @@ class TestMovie:
             np.array([[[0, 0, 0, 255]]]))
 
     def test_record_can_save_image_data_to_stream(self):
-        movie = Movie(2, 2)
-        layer = Layer(1.0)
-        movie.add_layer(0.0, layer)
+        node = Node(0.0, 1.0)
+        movie = Movie(2, 2, [node])
         stream = io.BytesIO()
 
         movie.record('.mp4', 2, file=stream)
@@ -127,7 +62,7 @@ class TestMovie:
 
     def test_record_can_save_audio_data_to_stream(self, mocker):
         movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
-        layer = AudioLayer(1.0, 1, None, None)
+        node = Audio(1.0, 1, None, None)
         # get_audio_data returns the audio data in wav format, so we can mock
         # that to return the contents of a real wav file.
         mocked_get_audio_data = mocker.patch.object(layer, 'get_audio_data')

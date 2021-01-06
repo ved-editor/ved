@@ -11,12 +11,13 @@ from pyglet.gl import *  # noqa F403
 class Movie:
     """A movie is an instance of ved that acts as a container for layers"""
 
-    def __init__(self, width: int, height: int, background=(0, 0, 0, 1)):
+    def __init__(self, width: int, height: int, nodes=[], background=(0, 0,
+    0, 1)):
         self.width = width
         self.height = height
         self.background = background
 
-        self._tracks = Movie.Tracks(self)
+        self.nodes = nodes
         # Create opengl context (wrapped in an invisible window).
         # This will be used to render the final result.
         self._window = pyglet.window.Window(
@@ -24,67 +25,27 @@ class Movie:
         self.current_time = 0.0
 
     @property
-    def tracks(self):
-        return self._tracks
-
-    def add_layer(self, time, layer):
-        self.tracks.append((time, layer))
-        return self
-
-    def remove_layer(self, layer):
-        self.tracks = [(time, layer_) for time, layer_ in self.tracks
-            if layer_ != layer]
-
-    @tracks.setter
-    def tracks(self, value):
-        for time, layer in self.tracks:
-            layer.detach()
-
-        self._tracks = Movie.Tracks(self, value)
-        for time, layer in value:
-            layer.attach(self)
-
-    @property
     def duration(self):
         duration = 0.0
-        for time, layer in self.tracks:
-            duration = max(duration, time + layer.duration)
+        for node in self.nodes:
+            duration = max(duration, node.end_time)
         return duration
 
-    def _reset(self):
-        for track in self.tracks:
-            self._reset_track(track)
-
-    def _reset_track(self, track):
-        start_time, layer = track
-        layer.active = False    # Clear active flag directly
-
-    def _process_track(self, track, time):
-        start_time, layer = track
-        end_time = start_time + layer.duration
-        if start_time <= time < end_time:
-            if not layer.active:
-                layer.start()
-            layer.render(time - start_time)
-        else:
-            if layer.active:
-                layer.stop()
-
-    def _process_tracks(self, time):
-        for track in self.tracks:
-            self._process_track(track, time)
+    def _process_nodes(self):
+        for node in self.nodes:
+            if node.start_time <= self.current_time < node.end_time:
+                node(self)
 
     def _draw(self):
         glClearColor(*self.background)
         glClear(GL_COLOR_BUFFER_BIT)
-
-    def _render(self, time):
-        self._process_tracks(time)
-        self._draw()
+        # TODO: draw nodes' outputs
 
     def tick(self):
         """Call each node"""
-        # TODO: Update all nodes once nodes are implemented
+
+        self._process_nodes()
+        self._draw()
 
     def play(self, start_time: float, end_time: float,
     frame_rate: float):
@@ -104,7 +65,7 @@ class Movie:
         :param file: file-like object to write to, optional
         :type file: typing.IO, optional
         """
-        self._render(time)
+        self.tick()
 
         pyglet.image.get_buffer_manager() \
             .get_color_buffer() \
@@ -165,17 +126,3 @@ class Movie:
         file.write(bytes(stdout))
         if close_file:
             file.close()
-
-    class Tracks(list):
-        def __init__(self, movie, iterable=()):
-            list.__init__(self, iterable)
-            self.movie = movie
-
-        def __delitem__(self, track):
-            track.detach()
-            list.__delitem__(self, track)
-
-        def append(self, track):
-            list.append(self, track)
-            time, layer = track
-            layer.attach(self.movie)
