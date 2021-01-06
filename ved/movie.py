@@ -108,7 +108,7 @@ class Movie:
         cmd += '-max_interleave_delta 0 pipe: -v error'
         return cmd
 
-    def _record_frames(self, start_time, end_time, fps):
+    def _record_frames(self, start_time, end_time, frame_rate):
         pixel_data = BytesIO()  # concatenation of each frame's pixels
         audio_data = {}  # node: Node -> samples: BytesIO
 
@@ -143,9 +143,12 @@ class Movie:
 
         return pixel_data, audio_data
 
-    def record(self, filename, fps: float, start_time=0.0, end_time:
+    def record(self, filename, frame_rate: float, start_time=0.0, end_time:
     float = None, file=None):
         """Render the movie from `start_time` to `end_time`"""
+
+        if end_time is None:
+            end_time = self.duration
 
         close_file = False   # close the file when done if we created it here
         if file is None:
@@ -154,9 +157,10 @@ class Movie:
         format = filename[filename.rfind('.') + 1:]
         tmp = tempfile.mkdtemp(prefix='ved-')
 
-        pixel_data, audio_data = self._record_frames(start_time, end_time, fps)
+        pixel_data, audio_data = self._record_frames(start_time, end_time,
+            frame_rate)
 
-        cmd = self._prepare_record_command(audio_data, fps, format, tmp)
+        cmd = self._prepare_record_command(audio_data, frame_rate, format, tmp)
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
