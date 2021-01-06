@@ -3,9 +3,13 @@ from io import BytesIO
 import tempfile
 import os
 from shutil import rmtree
+import struct
+import wave
 
 import pyglet
 from pyglet.gl import *  # noqa F403
+
+from .node.audio import Audio
 
 
 class Movie:
@@ -72,16 +76,31 @@ class Movie:
             .get_image_data() \
             .save(filename=filename, file=file)
 
-    def _prepare_record_command(self, fps, format, audio, tmp):
+    def _get_audio_nodes(self) -> list:
+        def has_audio(node):
+            return isinstance(node, Audio)  # and node.channels > 0
+
+        return [node for node in self.nodes if has_audio(node)]
+
+    def _write_audio_data(self, node, samples, clip_path):
+        f = open(clip_path, 'wb')
+        wav = wave.open(f)
+        wav.setnchannels(1)
+        wav.setframerate(node.sample_rate)
+        wav.setsampwidth(node.sample_size // 8)
+        wav.writeframes(samples.getvalue())
+
+    def _prepare_record_command(self, audio_data, fps, format, tmp):
         # Since ffmpeg has a hard time with multiple piped inputs, only pipe
         # images and save the audio to temporary files.
+
         cmd = 'ffmpeg -r {} -f png_pipe -i pipe: '.format(fps)
         audio_id = 0
-        for _, audio_data in audio:
+        for node, samples in audio_data.items():
             clip_path = os.path.join(tmp, 'audio_{}.wav'.format(audio_id))
-            with open(clip_path, 'wb') as f:
-                f.write(audio_data)
-            cmd += '-f wav -i {} '.format(clip_path)
+            self._write_audio_data(node, samples, clip_path)
+            cmd += '-itsoffset {} -f wav -i {} ' \
+                .format(node.start_time, clip_path)
             audio_id += 1
         cmd += '-c:v libx264 -c:a aac -pix_fmt yuv420p -crf 23 -r {} ' \
             .format(fps)
@@ -89,8 +108,42 @@ class Movie:
         cmd += '-max_interleave_delta 0 pipe: -v error'
         return cmd
 
+    def _record_frames(self, fps):
+        pixel_data = BytesIO()  # concatenation of each frame's pixels
+        audio_data = {}  # node: Node -> samples: BytesIO
+
+        while self.current_time <= self.duration:
+            self.tick()
+            # Save audio samples per node (combine later)
+            for node in self._get_audio_nodes():
+                if node not in audio_data:
+                    audio_data[node] = BytesIO()
+                if node.sample_size == 8:
+                    # Scale float to int
+                    i = int(node.sample * (2 ** 8 - 1))
+                    # Pack int to bytes
+                    b = struct.pack('<c', bytes([i]))
+                else:
+                    # Scale float to int
+                    i = int(node.sample * (2 ** 16 - 1))
+                    # Pack int to bytes
+                    b = struct.pack('<h', bytes([i]))
+                audio_data[node].write(b)
+
+            # Save pixels
+            # TODO: make sure self._window is the active window
+            pyglet.image.get_buffer_manager() \
+                .get_color_buffer() \
+                .get_image_data() \
+                .save(filename='.png', file=pixel_data)
+            # TODO: replace .png with an argument
+
+            self.current_time += 1.0 / frame_rate
+
+        return pixel_data, audio_data
+
     def record(self, filename, fps, file=None):
-        """Render the movie from `start_time` to `end_time`"""
+        """Render the movie from the current time to the end"""
 
         close_file = False   # close the file when done if we created it here
         if file is None:
@@ -99,25 +152,13 @@ class Movie:
         format = filename[filename.rfind('.') + 1:]
         tmp = tempfile.mkdtemp(prefix='ved-')
 
-        # TODO: populate with tuples (clip, data) for each output audio node
-        audio = []
-        screenshots = BytesIO()
-        self.current_time = 0  # TODO: replace with start_time
-        while self.current_time <= self.duration:  # TODO: use end_time
-            self.tick()
-            # TODO: render video nodes to movie
-            self.screenshot(self.current_time, 'frame.png', file=screenshots)
-            # TODO: render video nodes to movie
-            for clip, data in audio:
-                # if clip has output, append it to data
-                pass
-            self.current_time += 1.0 / fps
+        pixel_data, audio_data = self._record_frames(start_time, end_time, fps)
 
-        cmd = self._prepare_record_command(fps, format, audio, tmp)
+        cmd = self._prepare_record_command(audio_data, fps, format, tmp)
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        stdout, stderr = proc.communicate(input=screenshots.getvalue())
+        stdout, stderr = proc.communicate(input=pixel_data.getvalue())
 
         rmtree(tmp)
 
