@@ -60,7 +60,7 @@ class TestMovie:
                     assert np.array_equal(np.array([0, 0, 0]), pixel)
 
     def test_record_can_save_audio_data_to_stream(self, mocker):
-        node = Audio(0.0, 1.0, 8, 44100)
+        node = Audio(0.0, 1.0, 1, 8, 44100)
         # width needs to be divisible by 2 for ffmpeg
         movie = Movie(2, 2, [node])
         mocked_call = mocker.patch.object(node, '__call__')

@@ -78,14 +78,14 @@ class Movie:
 
     def _get_audio_nodes(self) -> list:
         def has_audio(node):
-            return isinstance(node, Audio)  # and node.channels > 0
+            return isinstance(node, Audio) and node.channels > 0
 
         return [node for node in self.nodes if has_audio(node)]
 
     def _write_audio_data(self, node, samples, clip_path):
         f = open(clip_path, 'wb')
         wav = wave.open(f)
-        wav.setnchannels(1)
+        wav.setnchannels(node.channels)
         wav.setframerate(node.sample_rate)
         wav.setsampwidth(node.sample_size // 8)
         wav.writeframes(samples.getvalue())
@@ -115,21 +115,23 @@ class Movie:
         self.current_time = start_time
         while self.current_time <= end_time:
             self.tick()
-            # Save audio samples per node (combine later)
+            # Save audio samples per node as raw samples (encode later)
             for node in self._get_audio_nodes():
                 if node not in audio_data:
                     audio_data[node] = BytesIO()
-                if node.sample_size == 8:
-                    # Scale float to int
-                    i = int(node.sample * (2 ** 8 - 1))
-                    # Pack int to bytes
-                    b = struct.pack('<c', bytes([i]))
-                else:
-                    # Scale float to int
-                    i = int(node.sample * (2 ** 16 - 1))
-                    # Pack int to bytes
-                    b = struct.pack('<h', bytes([i]))
-                audio_data[node].write(b)
+                # for each channel
+                for sample in node.samples:
+                    if node.sample_size == 8:
+                        # Scale float to int
+                        i = int(sample * (2 ** 8 - 1))
+                        # Pack int to bytes
+                        b = struct.pack('<c', bytes([i]))
+                    else:
+                        # Scale float to int
+                        i = int(sample * (2 ** 16 - 1))
+                        # Pack int to bytes
+                        b = struct.pack('<h', bytes([i]))
+                    audio_data[node].write(b)
 
             # Save pixels
             # TODO: make sure self._window is the active window
