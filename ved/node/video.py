@@ -7,7 +7,7 @@ class Video(Node):
     """Base class for all nodes that contains audio"""
 
     def __init__(self, start_time: float, end_time: float, width: int,
-    height: int, output_video=False):
+    height: int, output_video=True):
         """
         Create a video node
 
