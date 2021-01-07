@@ -7,18 +7,18 @@ class Video(Node):
     """Base class for all nodes that contains audio"""
 
     def __init__(self, start_time: float, end_time: float, width: int,
-    height: int, output=False):
+    height: int, output_video=False):
         """
         Create a video node
 
-        :param output: Include audio (and video) output in movie
-        :type output: bool, optional
+        :param output_video: Include video output in movie
+        :type output_video: bool, optional
         """
 
         super().__init__(start_time, end_time)
         self.width = width
         self.height = height
-        self.output = output
+        self.output_video = output_video
 
         # Create an opengl context for rendering this node
         self.window = pyglet.window.Window(
