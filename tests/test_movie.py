@@ -1,5 +1,4 @@
 import io
-from os.path import dirname, join
 import subprocess
 
 import pytest   # noqa F401
@@ -61,15 +60,11 @@ class TestMovie:
                     assert np.array_equal(np.array([0, 0, 0]), pixel)
 
     def test_record_can_save_audio_data_to_stream(self, mocker):
-        movie = Movie(2, 2)  # width needs to be divisible by 2 for ffmpeg
-        node = Audio(1.0, 1, None, None)
-        # get_audio_data returns the audio data in wav format, so we can mock
-        # that to return the contents of a real wav file.
-        mocked_get_audio_data = mocker.patch.object(layer, 'get_audio_data')
-        wav_path = join(dirname(__file__), 'assets', 'audio.wav')
-        with open(wav_path, 'rb') as audio:
-            mocked_get_audio_data.return_value = audio.read()
-        movie.add_layer(0.0, layer)
+        node = Audio(0.0, 1.0, 8, 44100)
+        # width needs to be divisible by 2 for ffmpeg
+        movie = Movie(2, 2, [node])
+        mocked_call = mocker.patch.object(node, '__call__')
+        mocked_call.return_value = 0.5
         result = io.BytesIO()
 
         movie.record('.mp4', 2, file=result)
