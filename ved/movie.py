@@ -76,9 +76,11 @@ class Movie:
             .get_image_data() \
             .save(filename=filename, file=file)
 
-    def _get_audio_nodes(self) -> list:
+    def _get_audio_output_nodes(self) -> list:
         def has_audio(node):
-            return isinstance(node, Audio) and node.channels > 0
+            return isinstance(node, Audio) \
+                and node.output_audio \
+                and node.channels > 0
 
         return [node for node in self.nodes if has_audio(node)]
 
@@ -116,7 +118,7 @@ class Movie:
         while self.current_time <= end_time:
             self.tick()
             # Save audio samples per node as raw samples (encode later)
-            for node in self._get_audio_nodes():
+            for node in self._get_audio_output_nodes():
                 if node not in audio_data:
                     audio_data[node] = BytesIO()
                 # for each channel
