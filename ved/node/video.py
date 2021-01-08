@@ -28,3 +28,5 @@ class Video(Node):
         """
         Render a single video frame to `self.window`
         """
+
+        self.window.switch_to()
