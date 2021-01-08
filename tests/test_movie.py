@@ -28,7 +28,7 @@ class TestMovie:
         w = h = 1
         movie = Movie(w, h, background=PURPLE)
 
-        movie.screenshot(0.0, '.png', io.BytesIO())
+        movie.tick()
 
         mocked_glClearColor.assert_called_once_with(*PURPLE)
 
