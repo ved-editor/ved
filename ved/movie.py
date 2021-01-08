@@ -64,12 +64,18 @@ class Movie:
     def screenshot(self, time, filename, file=None):
         """
         Save a screenshot of the movie to a file or file-like object
-
         :param float time: the time in seconds to take a screenshot at
         :param str filename: where to write the file, or hint of output format
         :param file: file-like object to write to, optional
         :type file: typing.IO, optional
         """
+        
+       import os, shutil
+       dir="C:/Users/"
+       source_dir="C:/Users/sourcedir"
+       dest_dir="C:/Users/destdir"
+       dest=shutil.move(source_dir,dest_dir) #os.mkdir
+
         self.tick()
 
         pyglet.image.get_buffer_manager() \
@@ -77,6 +83,9 @@ class Movie:
             .get_image_data() \
             .save(filename=filename, file=file)
 
+        #filename
+        filename= 'C:/examplepath/'
+        
     def _get_audio_output_nodes(self) -> list:
         def has_audio(node):
             return isinstance(node, Audio) \
