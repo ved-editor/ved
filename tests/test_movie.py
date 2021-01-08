@@ -11,17 +11,7 @@ from ved.node.audio import Audio
 
 
 class TestMovie:
-    def test_play_from_0_to_1_at_framerate_1_calls_tick_twice(self, mocker):
-        node = Node(0.0, 1.0)
-        movie = Movie(1, 1, [node])
-        spy = mocker.spy(movie, 'tick')
-
-        movie.play(0.0, 1.0, 1.0)
-
-        assert spy.call_count == 2
-
-    def test_screenshot_without_nodes_calls_glClearColor_once(self,
-    mocker):
+    def test_tick_calls_glClearColor_once(self, mocker):
         # Mock glClearColor in the module where it is used.
         mocked_glClearColor = mocker.patch('ved.movie.glClearColor')
         PURPLE = (255, 0, 255, 255)
@@ -32,7 +22,7 @@ class TestMovie:
 
         mocked_glClearColor.assert_called_once_with(*PURPLE)
 
-    def test_screenshot_without_nodes_calls_switch_to_once(self, mocker):
+    def test_tick_switch_to_once(self, mocker):
         # Mock glClearColor in the module where it is used.
         movie = Movie(1, 1)
         mocked_switch_to = mocker.patch.object(movie._window, 'switch_to')
@@ -52,6 +42,15 @@ class TestMovie:
         assert np.array_equal(
             imageio.imread(uri=stream, format='png'),
             np.array([[[0, 0, 0, 255]]]))
+
+    def test_play_from_0_to_1_at_framerate_1_calls_tick_twice(self, mocker):
+        node = Node(0.0, 1.0)
+        movie = Movie(1, 1, [node])
+        spy = mocker.spy(movie, 'tick')
+
+        movie.play(0.0, 1.0, 1.0)
+
+        assert spy.call_count == 2
 
     def test_record_can_save_image_data_to_stream(self):
         node = Node(0.0, 1.0)
