@@ -41,6 +41,7 @@ class Movie:
                 node(self)
 
     def _draw(self):
+        self._window.switch_to()
         glClearColor(*self.background)
         glClear(GL_COLOR_BUFFER_BIT)
         # TODO: draw nodes' outputs

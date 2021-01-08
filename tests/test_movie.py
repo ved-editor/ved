@@ -32,6 +32,15 @@ class TestMovie:
 
         mocked_glClearColor.assert_called_once_with(*PURPLE)
 
+    def test_screenshot_without_nodes_calls_switch_to_once(self, mocker):
+        # Mock glClearColor in the module where it is used.
+        movie = Movie(1, 1)
+        mocked_switch_to = mocker.patch.object(movie._window, 'switch_to')
+
+        movie.tick()
+
+        mocked_switch_to.assert_called_once()
+
     def test_screenshot_can_save_to_stream(self):
         node = Node(0.0, 1.0)
         movie = Movie(1, 1, [node])

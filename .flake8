@@ -3,3 +3,4 @@ ignore=E128
 
 per-file-ignores=
     ved/movie.py:F405
+    tests/test_movie.py:F405
