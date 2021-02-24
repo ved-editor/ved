@@ -12,8 +12,8 @@ imageio-ffmpeg = "*"
 flake8 = "*"
 
 [packages]
-pyglet = "*"
-Pillow = ">=7.1.0"
+pyglet = "==1.5.7"
+Pillow = "==7.2.0"
 
 [requires]
 python_version = "3"
