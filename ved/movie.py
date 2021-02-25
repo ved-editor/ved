@@ -130,23 +130,22 @@ class Movie:
             # multiply (seconds since started) and (1 / sample_rate) by
             # increment.
             if progress % (float(increment) / sample_rate) == 0:
+                # Save audio samples per node as raw samples (encode later)
                 for node in self._get_audio_output_nodes():
                     if node not in audio_data:
                         audio_data[node] = BytesIO()
                     # for each channel
                     for sample in node.samples:
+                        # Scale float to int. Subtract one from exponent
+                        # because [-1, 1] spans 2 units already.
+                        # Then, pack int to bytes.
                         if node.sample_size == 8:
-                            # Scale float to int
-                            i = int(sample * (2 ** 8 - 1))
-                            # Pack int to bytes
-                            b = struct.pack('<c', bytes([i]))
+                            i = int((1 + sample) * (2 ** 8 - 1))
+                            b = struct.pack('<B', i)
                         else:
-                            # Scale float to int
                             i = int(sample * (2 ** 16 - 1))
-                            # Pack int to bytes
-                            b = struct.pack('<h', bytes([i]))
+                            b = struct.pack('<h', i)
                         audio_data[node].write(b)
-
 
             # if (seconds since started) % (1 / frame_rate) == 0
             # multiply (seconds since started) and (1 / frame_rate) by
