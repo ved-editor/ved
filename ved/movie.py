@@ -54,13 +54,13 @@ class Movie:
         self._draw()
 
     def play(self, start_time: float, end_time: float,
-    frame_rate: float):
+    rate: float):
         """Call each node periodically from `start_time` to `end_time`"""
 
         self.current_time = start_time
         while self.current_time <= end_time:
             self.tick()
-            self.current_time += 1.0 / frame_rate
+            self.current_time += 1.0 / rate
 
     def screenshot(self, time, filename, file=None):
         """
