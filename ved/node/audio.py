@@ -22,5 +22,5 @@ class Audio(Node):
 
     def __call__(self, movie):
         """
-        Calculate a single audio sample and stores it in `self.sample`
+        Calculate a single audio sample and stores it in `self.samples`
         """

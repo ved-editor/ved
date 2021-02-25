@@ -14,7 +14,7 @@ from .node.audio import Audio
 
 
 class Movie:
-    """A movie is an instance of ved that acts as a container for layers"""
+    """A video-editing context"""
 
     def __init__(self, width: int, height: int, nodes=[], background=(0, 0,
     0, 1)):
@@ -174,7 +174,23 @@ class Movie:
     def record(self, filename, frame_rate: float, sample_rate: float,
     start_time=0.0, end_time: float = None, file=None,
     ffmpeg_options: List[str] = []):
-        """Render the movie from `start_time` to `end_time`"""
+        """
+        Render the movie from `start_time` to `end_time`
+
+        :param str filename: the path to the output file, only the extension
+        will be used if `file` is provided
+        :param float frame_rate: the video frame rate
+        :param float sample_rate: the audio sample rate
+        :param start_time: timestamp within the movie to start recording at
+        :type start_time: float, optional
+        :param end_time: timestamp within the movie to stop recording at
+        :type end_time: float, optional
+        :param file: a file-like object to write to, supercedes `filename`
+        :type file: BinaryIO, optional
+        :param ffmpeg_options: optional list of ffmpeg command-line options
+        to pass to the output file
+        :type ffmpeg_options: List[str], optional
+        """
 
         if end_time is None:
             end_time = self.duration
@@ -194,6 +210,7 @@ class Movie:
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+        # Run ffmpeg command
         stdout, stderr = proc.communicate(input=pixel_data.getvalue())
 
         rmtree(tmp)
