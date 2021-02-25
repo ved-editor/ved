@@ -140,11 +140,17 @@ class Movie:
                         # because [-1, 1] spans 2 units already.
                         # Then, pack int to bytes.
                         if node.sample_size == 8:
-                            i = int((1 + sample) * (2 ** 8 - 1))
+                            # Samples need to be unsigned shorts, so shift up
+                            i = int((1 + sample) * (2 ** 7))
                             b = struct.pack('<B', i)
-                        else:
-                            i = int(sample * (2 ** 16 - 1))
+                        elif node.sample_size == 16:
+                            i = int(sample * (2 ** 15))
                             b = struct.pack('<h', i)
+                        elif node.sample_size == 24:
+                            raise NotImplementedError()  # TODO: figure out
+                        elif node.sample_size == 32:
+                            i = int(sample * (2 ** 31))
+                            b = struct.pack('<i', i)
                         audio_data[node].write(b)
 
             # if (seconds since started) % (1 / frame_rate) == 0
