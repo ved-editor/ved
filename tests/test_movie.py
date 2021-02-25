@@ -57,7 +57,7 @@ class TestMovie:
         movie = Movie(2, 2, [node])
         stream = io.BytesIO()
 
-        movie.record('.mp4', 2, file=stream)
+        movie.record('.mp4', frame_rate=25, sample_rate=1, file=stream)
 
         stream.seek(0)
         video = imageio.get_reader(uri=stream, format='mp4')
@@ -75,7 +75,8 @@ class TestMovie:
         mocked_call.return_value = 0.5
         result = io.BytesIO()
 
-        movie.record('.mp4', 2, file=result)
+        movie.record('.mp4', frame_rate=1, sample_rate=11025,
+            file=result)
 
         result.seek(0)
         p = subprocess.Popen('ffprobe pipe: -v error', shell=True,
