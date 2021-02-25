@@ -6,8 +6,8 @@ from .node import Node
 class Video(Node):
     """Base class for all nodes that contains audio"""
 
-    def __init__(self, start_time: float, end_time: float, width: int,
-    height: int, output_video=True):
+    def __init__(self, start_time: float, end_time: float, x: int, y: int,
+    width: int, height: int, output_video=True):
         """
         Create a video node
 
@@ -16,6 +16,8 @@ class Video(Node):
         """
 
         super().__init__(start_time, end_time)
+        self.x = x
+        self.y = y
         self.width = width
         self.height = height
         self.output_video = output_video
