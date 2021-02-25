@@ -57,7 +57,8 @@ class TestMovie:
         movie = Movie(2, 2, [node])
         stream = io.BytesIO()
 
-        movie.record('.mp4', frame_rate=25, sample_rate=1, file=stream)
+        movie.record('.mp4', frame_rate=25, sample_rate=1, file=stream,
+            ffmpeg_options=['-movflags frag_keyframe+empty_moov'])
 
         stream.seek(0)
         video = imageio.get_reader(uri=stream, format='mp4')

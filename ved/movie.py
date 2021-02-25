@@ -5,6 +5,7 @@ import os
 from shutil import rmtree
 import struct
 import wave
+from typing import List
 
 import pyglet
 from pyglet.gl import *  # noqa F403
@@ -94,7 +95,7 @@ class Movie:
         wav.writeframes(samples.getvalue())
 
     def _prepare_record_command(self, audio_data, frame_rate, sample_rate,
-    format, tmp):
+    format, ffmpeg_options, tmp):
         # Since ffmpeg has a hard time with multiple piped inputs, only pipe
         # images and save the audio to temporary files.
 
@@ -106,11 +107,12 @@ class Movie:
             cmd += '-itsoffset {} -i {} ' \
                 .format(node.start_time, clip_path)
             audio_id += 1
-        cmd += '-c:v libx264 -c:a aac -pix_fmt yuv420p -crf 23 -r {} ' \
-            .format(frame_rate)
-        cmd += '-ar {} -y -f {} -movflags frag_keyframe+empty_moov ' \
-			.format(sample_rate, format)
-        cmd += '-max_interleave_delta 0 pipe: -v error'
+
+        cmd += '-y -r {} -ar {} -f {} ' \
+            .format(frame_rate, sample_rate, format)
+        if len(ffmpeg_options) > 0:
+            cmd += ' '.join(ffmpeg_options) + ' '
+        cmd += 'pipe: -v error'
         return cmd
 
     def _record_frames(self, start_time, end_time, frame_rate, sample_rate):
@@ -165,7 +167,8 @@ class Movie:
         return pixel_data, audio_data
 
     def record(self, filename, frame_rate: float, sample_rate: float,
-    start_time=0.0, end_time: float = None, file=None):
+    start_time=0.0, end_time: float = None, file=None,
+    ffmpeg_options: List[str] = []):
         """Render the movie from `start_time` to `end_time`"""
 
         if end_time is None:
@@ -182,7 +185,7 @@ class Movie:
             frame_rate, sample_rate)
 
         cmd = self._prepare_record_command(audio_data, frame_rate,
-            sample_rate, format, tmp)
+            sample_rate, format, ffmpeg_options, tmp)
         proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
