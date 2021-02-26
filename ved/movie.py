@@ -10,6 +10,7 @@ from typing import List
 import pyglet
 from pyglet.gl import *  # noqa F403
 
+from .node.video import Video
 from .node.audio import Audio
 
 
@@ -41,11 +42,28 @@ class Movie:
             if node.start_time <= self.current_time < node.end_time:
                 node(self)
 
+    def _get_video_output_nodes(self) -> list:
+        return [node for node in self.nodes if isinstance(node, Video)]
+
     def _draw(self):
         self._window.switch_to()
+        # Render background
         glClearColor(*self.background)
         glClear(GL_COLOR_BUFFER_BIT)
-        # TODO: draw nodes' outputs
+
+        # Render nodes
+        for node in self._get_video_output_nodes():
+            if node.start_time <= self.current_time < node.end_time:
+                # Retrieve the node's image data.
+                node.window.switch_to()
+                node_image_data = pyglet.image.get_buffer_manager() \
+                    .get_color_buffer() \
+                    .get_image_data()
+
+                # Render the image data of the node onto the movie's window.
+                self._window.switch_to()
+                # Flipped y-axis, so subtract node.height
+                node_image_data.blit(node.x, node.y - node.height)
 
     def tick(self):
         """Call each node"""

@@ -2,6 +2,7 @@ import io
 import subprocess
 import struct
 
+from pyglet import shapes
 import pytest   # noqa F401
 import imageio
 import numpy as np
@@ -9,6 +10,7 @@ import wave
 
 from ved.movie import Movie
 from ved.node import Node
+from ved.node.video import Video
 from ved.node.audio import Audio
 
 
@@ -32,6 +34,26 @@ class TestMovie:
         movie.tick()
 
         mocked_switch_to.assert_called_once()
+
+    def test_screenshot_can_save_image_data_to_stream_with_a_video_node(self):
+        node = Video(0.0, 1.0, x=0, y=0, width=1, height=1)
+        # Render a blue pixel over the video node
+        node.window.switch_to()
+        rect = shapes.Rectangle(x=0, y=0, width=1, height=1, color=(0, 0, 255))
+        rect.draw()
+
+        movie = Movie(2, 2, [node])
+        stream = io.BytesIO()
+
+        movie.screenshot(0.0, '.png', file=stream)
+
+        stream.seek(0)
+        frame = imageio.imread(uri=stream, format='png')
+        expected_frame = np.array([
+            [[0, 0, 0, 255], [0, 0, 0, 255]],
+            [[0, 0, 0, 255], [0, 0, 255, 255]]
+        ])
+        assert np.array_equal(expected_frame, frame)
 
     def test_screenshot_can_save_to_stream(self):
         node = Node(0.0, 1.0)
